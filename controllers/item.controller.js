@@ -1,5 +1,6 @@
 const prisma = require('../utils/prisma');
 const sendResponse = require('../utils/response');
+const { logItemMasterOnCreate } = require('../utils/item_transaction');
 
 // controllers/item.controller.js
 
@@ -132,6 +133,8 @@ const createItem = async (req, res, next) =>
                 itemType
             }
         });
+
+        await logItemMasterOnCreate(prisma, item);
 
         sendResponse(res, 201, 201, true, 'Item created successfully!', item);
 

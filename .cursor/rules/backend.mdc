@@ -1,3 +1,6 @@
+--
+alwaysApply: true
+---
 # Node.js Backend Project Guidelines
 
 ## Database

@@ -651,6 +651,45 @@ model Item {
 
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+
+  transactions          ItemTransaction[]
+}
+
+enum ItemTransactionAction {
+  ADD
+  UPDATE
+  DELETE
+}
+
+enum ItemTransactionSource {
+  ITEM
+  LEAD
+  QUOTATION
+  SALES_ORDER
+  TAX_INVOICE
+  PURCHASE_INDENT
+}
+
+model ItemTransaction {
+  id               Int                    @id @default(autoincrement())
+
+  itemId           Int
+  action           ItemTransactionAction
+  sourceModule     ItemTransactionSource
+  sourceId         Int
+  sourceLineItemId Int?
+
+  qty              Float?
+  rate             Float?
+  unitId           Int?
+
+  item             Item                   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime               @default(now())
+
+  @@index([itemId])
+  @@index([sourceModule, sourceId])
+  @@index([createdAt])
 }
 
 model Lead {

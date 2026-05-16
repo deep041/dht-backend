@@ -1,5 +1,10 @@
 const prisma = require('../utils/prisma');
 const sendResponse = require('../utils/response');
+const {
+    logLineItemsOnCreate,
+    logLineItemsOnUpdate,
+    logLineItemsOnDelete
+} = require('../utils/item_transaction');
 
 // Calculate totals from line items
 const calculateTotals = (lineItems) => {
@@ -181,6 +186,12 @@ const createQuotation = async (req, res, next) => {
             }
         });
 
+        await logLineItemsOnCreate(prisma, {
+            sourceModule: 'QUOTATION',
+            sourceId: quotation.id,
+            lineItems: quotation.lineItems
+        });
+
         res.status(201).json({
             success: true,
             message: 'Quotation created successfully',
@@ -234,6 +245,13 @@ const updateQuotation = async (req, res, next) => {
         // Delete existing line items
         await prisma.quotationLineItem.deleteMany({
             where: { quotationId: Number(id) }
+        });
+
+        await logLineItemsOnUpdate(prisma, {
+            sourceModule: 'QUOTATION',
+            sourceId: Number(id),
+            previousLineItems: existingQuotation.lineItems,
+            newLineItems: processedLineItems
         });
 
         // Update quotation
@@ -300,12 +318,19 @@ const deleteQuotation = async (req, res, next) => {
         const { id } = req.params;
 
         const quotation = await prisma.quotation.findUnique({
-            where: { id: Number(id) }
+            where: { id: Number(id) },
+            include: { lineItems: true }
         });
 
         if (!quotation) {
             return sendResponse(res, 404, 404, false, 'Quotation not found', null);
         }
+
+        await logLineItemsOnDelete(prisma, {
+            sourceModule: 'QUOTATION',
+            sourceId: quotation.id,
+            lineItems: quotation.lineItems
+        });
 
         await prisma.quotation.delete({
             where: { id: Number(id) }

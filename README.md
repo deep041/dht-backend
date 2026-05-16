@@ -1,2 +1,2 @@
-npx prisma migrate dev --name add_purchase-indent
+npx prisma migrate dev --name transaction_table
 npx prisma generate

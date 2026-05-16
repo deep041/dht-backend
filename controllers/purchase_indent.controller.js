@@ -1,5 +1,10 @@
 const prisma = require('../utils/prisma');
 const sendResponse = require('../utils/response');
+const {
+    logLineItemsOnCreate,
+    logLineItemsOnUpdate,
+    logLineItemsOnDelete
+} = require('../utils/item_transaction');
 
 const includeRelations = {
     department: true,
@@ -89,6 +94,12 @@ const createPurchaseIndent = async (req, res, next) => {
             include: includeRelations
         });
 
+        await logLineItemsOnCreate(prisma, {
+            sourceModule: 'PURCHASE_INDENT',
+            sourceId: indent.id,
+            lineItems: indent.lineItems
+        });
+
         res.status(201).json({
             success: true,
             message: 'Purchase indent created successfully',
@@ -116,7 +127,8 @@ const updatePurchaseIndent = async (req, res, next) => {
         } = req.body;
 
         const existing = await prisma.purchaseIndent.findUnique({
-            where: { id: Number(id) }
+            where: { id: Number(id) },
+            include: { lineItems: true }
         });
 
         if (!existing) {
@@ -125,6 +137,13 @@ const updatePurchaseIndent = async (req, res, next) => {
 
         await prisma.purchaseIndentLineItem.deleteMany({
             where: { purchaseIndentId: Number(id) }
+        });
+
+        await logLineItemsOnUpdate(prisma, {
+            sourceModule: 'PURCHASE_INDENT',
+            sourceId: Number(id),
+            previousLineItems: existing.lineItems,
+            newLineItems: lineItems
         });
 
         const indent = await prisma.purchaseIndent.update({
@@ -169,12 +188,19 @@ const deletePurchaseIndent = async (req, res, next) => {
         const { id } = req.params;
 
         const existing = await prisma.purchaseIndent.findUnique({
-            where: { id: Number(id) }
+            where: { id: Number(id) },
+            include: { lineItems: true }
         });
 
         if (!existing) {
             return sendResponse(res, 404, 404, false, 'Purchase indent not found', null);
         }
+
+        await logLineItemsOnDelete(prisma, {
+            sourceModule: 'PURCHASE_INDENT',
+            sourceId: existing.id,
+            lineItems: existing.lineItems
+        });
 
         await prisma.purchaseIndent.delete({
             where: { id: Number(id) }

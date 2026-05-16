@@ -2,6 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const prisma = require('../utils/prisma');
 const sendResponse = require('../utils/response');
+const {
+    logLineItemsOnCreate,
+    logLineItemsOnUpdate,
+    logLineItemsOnDelete
+} = require('../utils/item_transaction');
 
 const UPLOAD_DIR = path.join(__dirname, '..', 'uploads', 'sales-orders');
 
@@ -204,6 +209,12 @@ const createSalesOrder = async (req, res, next) => {
             include: orderIncludes
         });
 
+        await logLineItemsOnCreate(prisma, {
+            sourceModule: 'SALES_ORDER',
+            sourceId: salesOrder.id,
+            lineItems: salesOrder.lineItems
+        });
+
         res.status(201).json({
             success: true,
             message: 'Sales order created successfully',
@@ -220,7 +231,8 @@ const updateSalesOrder = async (req, res, next) => {
         const { lineItems = [], documentBase64, documentFileName, removeDocument } = req.body;
 
         const existing = await prisma.salesOrder.findUnique({
-            where: { id: Number(id) }
+            where: { id: Number(id) },
+            include: { lineItems: true }
         });
 
         if (!existing) {
@@ -245,6 +257,13 @@ const updateSalesOrder = async (req, res, next) => {
             where: { salesOrderId: Number(id) }
         });
 
+        await logLineItemsOnUpdate(prisma, {
+            sourceModule: 'SALES_ORDER',
+            sourceId: Number(id),
+            previousLineItems: existing.lineItems,
+            newLineItems: processedLineItems
+        });
+
         const updated = await prisma.salesOrder.update({
             where: { id: Number(id) },
             data,
@@ -266,12 +285,19 @@ const deleteSalesOrder = async (req, res, next) => {
         const { id } = req.params;
 
         const existing = await prisma.salesOrder.findUnique({
-            where: { id: Number(id) }
+            where: { id: Number(id) },
+            include: { lineItems: true }
         });
 
         if (!existing) {
             return sendResponse(res, 404, 404, false, 'Sales order not found', null);
         }
+
+        await logLineItemsOnDelete(prisma, {
+            sourceModule: 'SALES_ORDER',
+            sourceId: existing.id,
+            lineItems: existing.lineItems
+        });
 
         await prisma.salesOrder.delete({
             where: { id: Number(id) }

@@ -1,5 +1,6 @@
 const prisma = require('../utils/prisma');
 const sendResponse = require('../utils/response');
+const { logLineItemsOnCreate } = require('../utils/item_transaction');
 
 // controllers/lead.controller.js
 
@@ -112,6 +113,12 @@ const createLead = async (req, res, next) =>
             include: {
                 items: true
             }
+        });
+
+        await logLineItemsOnCreate(prisma, {
+            sourceModule: 'LEAD',
+            sourceId: lead.id,
+            lineItems: lead.items
         });
 
         res.status(201).json({

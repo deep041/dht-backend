@@ -28,6 +28,7 @@ const quotation = require('./quotation.route');
 const salesOrder = require('./sales_order.route');
 const taxInvoice = require('./tax_invoice.route');
 const purchaseIndent = require('./purchase_indent.route');
+const itemTransaction = require('./item_transaction.route');
 
 router.use('/roles', roles);
 router.use('/menus', menus);
@@ -57,5 +58,6 @@ router.use('/quotation', quotation);
 router.use('/sales-order', salesOrder);
 router.use('/tax-invoice', taxInvoice);
 router.use('/purchase-indent', purchaseIndent);
+router.use('/item-transaction', itemTransaction);
 
 module.exports = router;

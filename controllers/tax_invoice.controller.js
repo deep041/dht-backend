@@ -1,5 +1,10 @@
 const prisma = require('../utils/prisma');
 const sendResponse = require('../utils/response');
+const {
+    logLineItemsOnCreate,
+    logLineItemsOnUpdate,
+    logLineItemsOnDelete
+} = require('../utils/item_transaction');
 
 const round2 = (n) => Math.round((n || 0) * 100) / 100;
 
@@ -202,6 +207,12 @@ const createTaxInvoice = async (req, res, next) => {
             include: invoiceIncludes
         });
 
+        await logLineItemsOnCreate(prisma, {
+            sourceModule: 'TAX_INVOICE',
+            sourceId: taxInvoice.id,
+            lineItems: taxInvoice.lineItems
+        });
+
         res.status(201).json({
             success: true,
             message: 'Tax invoice created successfully',
@@ -218,7 +229,8 @@ const updateTaxInvoice = async (req, res, next) => {
         const { lineItems = [] } = req.body;
 
         const existing = await prisma.taxInvoice.findUnique({
-            where: { id: Number(id) }
+            where: { id: Number(id) },
+            include: { lineItems: true }
         });
 
         if (!existing) {
@@ -235,6 +247,13 @@ const updateTaxInvoice = async (req, res, next) => {
 
         await prisma.taxInvoiceLineItem.deleteMany({
             where: { taxInvoiceId: Number(id) }
+        });
+
+        await logLineItemsOnUpdate(prisma, {
+            sourceModule: 'TAX_INVOICE',
+            sourceId: Number(id),
+            previousLineItems: existing.lineItems,
+            newLineItems: processedLineItems
         });
 
         const updated = await prisma.taxInvoice.update({
@@ -258,12 +277,19 @@ const deleteTaxInvoice = async (req, res, next) => {
         const { id } = req.params;
 
         const existing = await prisma.taxInvoice.findUnique({
-            where: { id: Number(id) }
+            where: { id: Number(id) },
+            include: { lineItems: true }
         });
 
         if (!existing) {
             return sendResponse(res, 404, 404, false, 'Tax invoice not found', null);
         }
+
+        await logLineItemsOnDelete(prisma, {
+            sourceModule: 'TAX_INVOICE',
+            sourceId: existing.id,
+            lineItems: existing.lineItems
+        });
 
         await prisma.taxInvoice.delete({
             where: { id: Number(id) }
