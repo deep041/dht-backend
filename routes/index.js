@@ -24,6 +24,7 @@ const subGroup = require('./sub_group.route');
 const rawMaterial = require('./raw_material.route');
 const item = require('./item.route');
 const lead = require('./lead.route');
+const quotation = require('./quotation.route');
 
 router.use('/roles', roles);
 router.use('/menus', menus);
@@ -49,5 +50,6 @@ router.use('/sub-group', subGroup);
 router.use('/raw-material', rawMaterial);
 router.use('/item', item);
 router.use('/lead', lead);
+router.use('/quotation', quotation);
 
 module.exports = router;

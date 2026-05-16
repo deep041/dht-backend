@@ -22,5 +22,6 @@ const subGroup = require('./sub_group.controller');
 const rawMaterial = require('./raw_material.controller');
 const item = require('./item.controller');
 const lead = require('./lead.controller');
+const quotation = require('./quotation.controller');
 
-module.exports = { role, menu, region, zone, subZone, department, stateCountry, plantUnit, warehouses, partyGroups, bankAccounts, paymentTerms, companyDetails, users, supplier, customer, hsn, classification, category, group, subGroup, rawMaterial, item, lead };
+module.exports = { role, menu, region, zone, subZone, department, stateCountry, plantUnit, warehouses, partyGroups, bankAccounts, paymentTerms, companyDetails, users, supplier, customer, hsn, classification, category, group, subGroup, rawMaterial, item, lead, quotation };

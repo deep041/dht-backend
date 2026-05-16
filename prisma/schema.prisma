@@ -192,6 +192,8 @@ model BankAccounts {
 
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+
+  quotations      Quotation[]
 }
 
 model PaymentTerms {
@@ -202,6 +204,7 @@ model PaymentTerms {
   updatedAt       DateTime       @updatedAt
 
   suppliers       Supplier[]
+  quotations      Quotation[]
 }
 
 model CompanyDetails {
@@ -395,6 +398,7 @@ model Customer {
 
   addresses         CustomerAddress[]
   contactPersons    CustomerContactPerson[]
+  quotations        Quotation[]
 
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -432,6 +436,7 @@ model CustomerContactPerson {
   designation String?
 
   customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  quotations  Quotation[]
 }
 
 enum AddressType {
@@ -684,4 +689,81 @@ model LeadItem {
   qty         Float?
 
   lead        Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+enum QuoteType {
+  GOODS
+  SERVICE
+}
+
+model Quotation {
+  id                    Int      @id @default(autoincrement())
+
+  // Header fields
+  customerId            Int
+  contactPersonId       Int?
+  gstNo                 String?
+  quoteDate             DateTime
+  expiryDate            DateTime
+  paymentTermId         Int?
+  bankAccountId         Int?
+  quoteType             QuoteType
+
+  // Totals
+  grossAmount           Float    @default(0)
+  cgstAmount            Float    @default(0)
+  sgstAmount            Float    @default(0)
+  igstAmount            Float    @default(0)
+  shippingCharge        Float    @default(0)
+  grandTotal            Float    @default(0)
+
+  // Terms & Conditions
+  termsAndConditions    String?
+
+  // Relations
+  customer              Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  contactPerson         CustomerContactPerson? @relation(fields: [contactPersonId], references: [id], onDelete: SetNull)
+  paymentTerms          PaymentTerms? @relation(fields: [paymentTermId], references: [id], onDelete: SetNull)
+  bankAccount           BankAccounts? @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+
+  // Line items
+  lineItems             QuotationLineItem[]
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([quoteDate])
+}
+
+model QuotationLineItem {
+  id                    Int      @id @default(autoincrement())
+
+  quotationId           Int
+  itemId                Int
+
+  description           String?
+  unitId                Int?
+  hsnCode               String?
+  qty                   Float    @default(0)
+  rate                  Float    @default(0)
+  discountPercentage    Float    @default(0)
+  discountAmount        Float    @default(0)
+  taxableAmount         Float    @default(0)
+
+  cgstRate              Float    @default(0)
+  cgstAmount            Float    @default(0)
+
+  sgstRate              Float    @default(0)
+  sgstAmount            Float    @default(0)
+
+  lineTotal             Float    @default(0)
+
+  // Relations
+  quotation             Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([quotationId])
 }
