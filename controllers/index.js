@@ -27,6 +27,7 @@ const quotation = require('./quotation.controller');
 const salesOrder = require('./sales_order.controller');
 const taxInvoice = require('./tax_invoice.controller');
 const purchaseIndent = require('./purchase_indent.controller');
+const purchaseInquiry = require('./purchase_inquiry.controller');
 const itemTransaction = require('./item_transaction.controller');
 
-module.exports = { role, menu, region, zone, subZone, department, stateCountry, plantUnit, warehouses, partyGroups, bankAccounts, paymentTerms, companyDetails, users, supplier, customer, customerContactPerson, hsn, classification, category, group, subGroup, rawMaterial, item, lead, quotation, salesOrder, taxInvoice, purchaseIndent, itemTransaction };
+module.exports = { role, menu, region, zone, subZone, department, stateCountry, plantUnit, warehouses, partyGroups, bankAccounts, paymentTerms, companyDetails, users, supplier, customer, customerContactPerson, hsn, classification, category, group, subGroup, rawMaterial, item, lead, quotation, salesOrder, taxInvoice, purchaseIndent, purchaseInquiry, itemTransaction };
