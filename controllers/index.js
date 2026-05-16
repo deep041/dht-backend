@@ -1,0 +1,26 @@
+const role = require('./roles.controller');
+const menu = require('./menus.controller');
+const region = require('./region.controller');
+const zone = require('./zone.controller');
+const subZone = require('./sub_zone.controller');
+const department = require('./department.controller');
+const stateCountry = require('./state_country.controller');
+const plantUnit = require('./plant_unit.controller');
+const warehouses = require('./warehouses.controller');
+const partyGroups = require('./party_groups.controller');
+const bankAccounts = require('./bank_accounts.controller');
+const paymentTerms = require('./payment_terms.controller');
+const companyDetails = require('./company_details.controller');
+const users = require('./users.controller');
+const supplier = require('./supplier.controller');
+const customer = require('./customer.controller');
+const hsn = require('./hsn.controller');
+const classification = require('./classification.controller');
+const category = require('./category.controller');
+const group = require('./group.controller');
+const subGroup = require('./sub_group.controller');
+const rawMaterial = require('./raw_material.controller');
+const item = require('./item.controller');
+const lead = require('./lead.controller');
+
+module.exports = { role, menu, region, zone, subZone, department, stateCountry, plantUnit, warehouses, partyGroups, bankAccounts, paymentTerms, companyDetails, users, supplier, customer, hsn, classification, category, group, subGroup, rawMaterial, item, lead };

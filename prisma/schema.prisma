@@ -1,0 +1,687 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model roles {
+  role_name String @db.VarChar
+  id        Int    @id @default(autoincrement())
+
+  users     Users[]
+}
+
+enum MenuStatus {
+  active
+  inactive
+}
+
+model menus {
+  id              Int        @id @default(autoincrement())
+  menu_name       String     @db.VarChar(100)
+  menu_url        String?    @db.VarChar(255)
+  icon_name       String?    @db.VarChar(100)
+  parent_menu_id  Int?
+  status          MenuStatus @default(active)
+  sequence        Int        @default(0)
+
+  parent   menus?  @relation("MenuToSubMenu", fields: [parent_menu_id], references: [id])
+  children menus[] @relation("MenuToSubMenu")
+
+  @@index([parent_menu_id])
+}
+
+enum RegionStatus {
+  active
+  inactive
+}
+
+model Region {
+  id          Int          @id @default(autoincrement())
+  region_name String       @unique
+  status      RegionStatus @default(active)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  zones       Zone[]
+  subZones    SubZone[]
+  users       Users[]
+}
+
+model Zone {
+  id         Int          @id @default(autoincrement())
+  zone       String
+  regionId   Int
+  region     Region       @relation(fields: [regionId], references: [id])
+  status     ZoneStatus   @default(active)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  subZones   SubZone[]
+  users      Users[]
+
+  @@map("zones")
+}
+
+enum ZoneStatus {
+  active
+  inactive
+}
+
+model SubZone {
+  id            Int            @id @default(autoincrement())
+  subZoneTitle  String
+  zoneId        Int
+  regionId      Int
+  status        SubZoneStatus  @default(active)
+
+  zone          Zone           @relation(fields: [zoneId], references: [id])
+  region        Region         @relation(fields: [regionId], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  users         Users[]
+
+  @@map("sub_zones")
+}
+
+enum SubZoneStatus {
+  active
+  inactive
+}
+
+model Department {
+  id            Int            @id @default(autoincrement())
+  code          String
+  name          String
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  users         Users[]
+}
+
+model Country {
+  id            Int            @id @default(autoincrement())
+  code          String
+  name          String
+
+  states            State[]
+  plantUnits        PlantUnit[]
+  companyDetails    CompanyDetails[]
+  suppliers         Supplier[]
+  customerAddress   CustomerAddress[]
+}
+
+model State {
+  id            Int            @id @default(autoincrement())
+  country_id    Int           
+  code          String
+  name          String
+
+  country        Country @relation(fields: [country_id], references: [id])
+
+  plantUnits        PlantUnit[]
+  companyDetails    CompanyDetails[]
+  suppliers         Supplier[]
+  customerAddress   CustomerAddress[]
+}
+
+model PlantUnit {
+  id              Int            @id @default(autoincrement())
+  unit_name       String
+  company_name    String
+  address_line_1  String
+  address_line_2  String
+  place           String
+  stateId         Int
+  countryId       Int
+  state_code      Int
+  pin_code        Int
+  gst_no          String
+  pan_no          String
+  cin_no          String
+  contact_no      String
+  email_id        String
+
+  country         Country        @relation(fields: [countryId], references: [id])
+  state           State          @relation(fields: [stateId], references: [id])
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  warehouses      Warehouses[]
+}
+
+model Warehouses {
+  id              Int            @id @default(autoincrement())
+  name            String
+  description     String
+  plant_unit_id   Int
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  plantUnit       PlantUnit      @relation(fields: [plant_unit_id], references: [id])
+}
+
+model PartyGroups {
+  id              Int            @id @default(autoincrement())
+  name            String
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  suppliers       Supplier[]
+}
+
+model BankAccounts {
+  id              Int            @id @default(autoincrement())
+  account_number  String
+  bank_name       String
+  ifsc_code       String
+  branch_name     String
+  branch_code     String
+  micr_code       String
+  bank_address    String
+  account_name    String
+  details         String
+  opening_balance Float
+  credit_or_debit String
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model PaymentTerms {
+  id              Int            @id @default(autoincrement())
+  term_name       String
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  suppliers       Supplier[]
+}
+
+model CompanyDetails {
+  id                        Int            @id @default(autoincrement())
+  company_name              String
+  company_short_name        String
+  proprietor                String
+  phone                     String
+  phone_2                   String
+  email_id                  String
+  email_id_2                String
+  country_id                Int
+  state_id                  Int
+  pin_code                  Int
+  place                     String
+  state_code                Int
+  address_line_1            String
+  address_line_2            String
+  gst_applicable            Boolean
+  gst_no                    String
+  pan_no                    String
+  cin_no                    String
+  llpin_no                  String
+  website                   String
+  logo                      String
+
+  asp_id                    Int
+  asp_password              String
+  portal_client_user_name   String
+  portal_client_password    String
+
+  country                   Country         @relation(fields: [country_id], references: [id])
+  state                     State           @relation(fields: [state_id], references: [id])
+
+  createdAt                 DateTime        @default(now())
+  updatedAt                 DateTime        @updatedAt
+}
+
+model Users {
+  id              Int            @id @default(autoincrement())
+  first_name      String
+  last_name       String
+  username        String         @unique
+  contact_no      String
+  email           String         @unique
+  department_id   Int
+  role_id         Int
+  reporting_to    Int?
+
+  region_id       Int?
+  zone_id         Int?
+  sub_zone_id     Int?
+  password        String
+  profile_picture String?
+  is_auth_person  Boolean        @default(false)
+
+  role            roles          @relation(fields: [role_id], references: [id])
+  department      Department     @relation(fields: [department_id], references: [id])
+  region          Region?        @relation(fields: [region_id], references: [id])
+  zone            Zone?          @relation(fields: [zone_id], references: [id])
+  sub_zone        SubZone?       @relation(fields: [sub_zone_id], references: [id])
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Supplier {
+  id                    Int       @id @default(autoincrement())
+
+  partyGroupId          Int
+  PartyGroups           PartyGroups @relation(fields: [partyGroupId], references: [id])
+
+  companyName           String
+  legalName             String?
+  gstNo                 String?
+  panNo                 String?
+
+  typeOfConcern         TypeOfConcern
+  gstRegistrationType   GstRegistrationType
+
+  vendorCode            String?
+  contactNo             String?
+  email                 String?
+
+  addressLine1          String?
+  place                 String?
+  pinCode               String?
+
+  countryId             Int
+  country               Country @relation(fields: [countryId], references: [id])
+
+  stateId               Int
+  state                 State @relation(fields: [stateId], references: [id])
+
+  stateCode             String?
+
+  website               String?
+
+  creditPeriodDays      Int?
+  creditLimit           Float?
+
+  paymentTermId         Int?
+  paymentTerms          PaymentTerms? @relation(fields: [paymentTermId], references: [id])
+
+  note                  String?
+
+  openingAmount         Float?
+  balanceType           BalanceType? // Cr/Dr
+
+  contactPersons        SupplierContactPerson[]
+  bankAccounts          SupplierBankAccount[]
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model SupplierContactPerson {
+  id            Int      @id @default(autoincrement())
+
+  supplierId    Int
+  supplier      Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  name          String
+  mobileNo      String?
+  email         String?
+  designation   String?
+
+  createdAt     DateTime @default(now())
+}
+
+model SupplierBankAccount {
+  id            Int      @id @default(autoincrement())
+
+  supplierId    Int
+  supplier      Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  bankName      String
+  accountNo     String
+  accountType   AccountType
+
+  branchCode    String?
+  branchName    String?
+  branchAddress String?
+
+  ifscCode      String?
+  swiftCode     String?
+
+  createdAt     DateTime @default(now())
+}
+
+enum TypeOfConcern {
+  PROPRIETORY
+  PARTNERSHIP
+  PVT_LTD
+  LTD
+}
+
+enum GstRegistrationType {
+  REGULAR
+  UNREGISTERED
+  COMPOSITION
+  CONSUMER
+}
+
+enum AccountType {
+  CURRENT
+  SAVING
+}
+
+enum BalanceType {
+  CREDIT
+  DEBIT
+}
+
+model Customer {
+  id                Int      @id @default(autoincrement())
+
+  supplyType        String?   // B2B, B2C
+  partyGroupId      Int
+  companyName       String
+  legalName         String?
+  panNo             String?
+  contactNo         String?
+  email             String?
+
+  vendorCode        String?
+  creditPeriodDays  Int?
+  creditLimit       Float?
+  paymentTermId     Int?
+  note              String?
+
+  addresses         CustomerAddress[]
+  contactPersons    CustomerContactPerson[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model CustomerAddress {
+  id          Int    @id @default(autoincrement())
+
+  customerId  Int
+  type        AddressType // BILLING / SHIPPING
+
+  attentionName String?
+  gstNo       String?
+  addressLine String
+  place       String
+  pinCode     String
+
+  countryId   Int
+  country     Country @relation(fields: [countryId], references: [id])
+
+  stateId     Int
+  state       State @relation(fields: [stateId], references: [id])
+  stateCode   String
+
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model CustomerContactPerson {
+  id          Int    @id @default(autoincrement())
+
+  customerId  Int
+  name        String
+  mobileNo    String?
+  email       String?
+  designation String?
+
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+enum AddressType {
+  BILLING
+  SHIPPING
+}
+
+model HsnMaster {
+  id          Int      @id @default(autoincrement())
+  hsnCode     String   @unique   // keep as string (some codes can be long)
+  gstSlab     Int      // 0, 5, 12, 18, 28
+  description String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  rawMaterial RawMaterial[]
+}
+
+model Account {
+  id    Int    @id @default(autoincrement())
+  code  String @unique
+  name  String
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  classifications   Classification[]
+}
+
+model Classification {
+  id               Int      @id @default(autoincrement())
+
+  isUsedInItemName Boolean  @default(false)
+  name             String
+  shortName        String
+  accountId        Int
+
+  account          Account  @relation(fields: [accountId], references: [id])
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  category         Category[]
+}
+
+model Category {
+  id               Int      @id @default(autoincrement())
+
+  isUsedInItemName Boolean  @default(false)
+  name             String
+  shortName        String
+
+  classificationId Int
+  classification   Classification @relation(fields: [classificationId], references: [id])
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  group            Group[]
+}
+
+model Group {
+  id               Int      @id @default(autoincrement())
+
+  isUsedInItemName Boolean  @default(false)
+  name             String
+  shortName        String
+
+  categoryId       Int
+  category         Category @relation(fields: [categoryId], references: [id])
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  subGroup         SubGroup[]
+}
+
+model SubGroup {
+  id               Int      @id @default(autoincrement())
+
+  isUsedInItemName Boolean  @default(false)
+  name             String
+  shortName        String
+
+  groupId          Int
+  group            Group    @relation(fields: [groupId], references: [id])
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model RawMaterial {
+  id                   Int      @id @default(autoincrement())
+
+  // 🔹 Basic
+  shapeId              Int
+  materialId           Int
+  itemName             String
+  description          String?
+  grade                String?
+  unitId               Int
+
+  purchaseRate         Float
+  sellingRate          Float
+
+  // 🔹 Tax
+  hsnId                Int
+  hsn                  HsnMaster @relation(fields: [hsnId], references: [id])
+  gstSlab              Int
+
+  // 🔹 Other
+  type                 String
+  scrapItemId          Int?
+
+  allowedExcessQty     Float?
+  thickness            Float?
+  leadTimeDays         Int?
+  minStockQty          Float?
+  minOrderQty          Float?
+
+  valuationMethod      String?
+
+  isDimensional        Boolean @default(false)
+  isScrap              Boolean @default(false)
+  allowNegativeStock   Boolean @default(false)
+  inspectionRequired   Boolean @default(false)
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model Item {
+  id                    Int      @id @default(autoincrement())
+
+  // 🔹 Hierarchy
+  classificationId      Int
+  categoryId            Int
+  groupId               Int
+  subGroupId            Int?
+
+  // 🔹 Basic
+  itemName              String
+  description           String?
+  grade                 String?
+  partDescription       String?
+
+  unitId                Int
+
+  purchaseRate          Float @default(0)
+  sellingRate           Float @default(0)
+
+  // 🔹 Tax
+  hsnId                 Int
+  gstSlab               Int
+
+  // 🔹 Drawing
+  drawingNo             String?
+  drawingRevision       String?
+  customerItemCode      String?
+
+  // 🔹 Manufacturing
+  allowedExcessQty      Float?
+  thickness             Float?
+  length                Float?
+  width                 Float?
+
+  netWeight             Float?
+  grossWeight           Float?
+
+  weightUomId           Int?
+  density               Float?
+  densityUomId          Int?
+
+  surfaceArea           Float?
+  surfaceAreaUomId      Int?
+
+  // 🔹 Inventory
+  rawMaterialItemId     Int?
+  scrapItemId           Int?
+
+  leadTimeDays          Int?
+  minStockQty           Float?
+  minOrderQty           Float?
+
+  valuationMethod       String?
+
+  // 🔹 Flags
+  allowNegativeStock    Boolean @default(false)
+  inspectionRequired    Boolean @default(false)
+
+  isDimensional         Boolean @default(false)
+  isScrap               Boolean @default(false)
+
+  // 🔹 Type
+  itemType              String
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Lead {
+  id                 Int      @id @default(autoincrement())
+
+  leadType           String
+  leadStatus         String
+  leadSource         String
+  leadStage          String
+
+  name               String
+  company            String?
+  position           String?
+
+  gstNo              String?
+
+  email              String?
+  contactNo          String?
+
+  website            String?
+  industry           String?
+
+  countryId          Int?
+  stateId            Int?
+
+  city               String?
+  pinCode            String?
+
+  addressLine1       String?
+  addressLine2       String?
+
+  regionId           Int?
+  zoneId             Int?
+  subZoneId          Int?
+
+  assignedEmployeeId Int?
+
+  items              LeadItem[]
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model LeadItem {
+  id          Int    @id @default(autoincrement())
+
+  leadId      Int
+  itemId      Int
+
+  description String?
+  qty         Float?
+
+  lead        Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
