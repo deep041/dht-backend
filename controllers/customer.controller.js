@@ -2,9 +2,18 @@ const prisma = require('../utils/prisma');
 const sendResponse = require('../utils/response');
 
 const getCustomers = async (req, res, next) => {
-    const customer = await prisma.customer.findMany();
-    sendResponse(res, 200, 200, true, 'Customer fetched successfully!', customer);
-}
+    try {
+        const customer = await prisma.customer.findMany({
+            include: {
+                addresses: true
+            },
+            orderBy: { companyName: 'asc' }
+        });
+        sendResponse(res, 200, 200, true, 'Customer fetched successfully!', customer);
+    } catch (error) {
+        next(error);
+    }
+};
 
 const createCustomer = async (req, res, next) =>
 {
@@ -90,4 +99,4 @@ const createCustomer = async (req, res, next) =>
     }
 };
 
-module.exports = { getCustomers, createCustomer }
+module.exports = { getCustomers, createCustomer };

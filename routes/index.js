@@ -25,6 +25,9 @@ const rawMaterial = require('./raw_material.route');
 const item = require('./item.route');
 const lead = require('./lead.route');
 const quotation = require('./quotation.route');
+const salesOrder = require('./sales_order.route');
+const taxInvoice = require('./tax_invoice.route');
+const purchaseIndent = require('./purchase_indent.route');
 
 router.use('/roles', roles);
 router.use('/menus', menus);
@@ -51,5 +54,8 @@ router.use('/raw-material', rawMaterial);
 router.use('/item', item);
 router.use('/lead', lead);
 router.use('/quotation', quotation);
+router.use('/sales-order', salesOrder);
+router.use('/tax-invoice', taxInvoice);
+router.use('/purchase-indent', purchaseIndent);
 
 module.exports = router;

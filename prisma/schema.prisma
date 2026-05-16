@@ -100,7 +100,8 @@ model Department {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
-  users         Users[]
+  users             Users[]
+  purchaseIndents   PurchaseIndent[]
 }
 
 model Country {
@@ -152,6 +153,9 @@ model PlantUnit {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   warehouses      Warehouses[]
+  salesOrders     SalesOrder[]
+  taxInvoices     TaxInvoice[]
+  purchaseIndents PurchaseIndent[]
 }
 
 model Warehouses {
@@ -164,6 +168,7 @@ model Warehouses {
   updatedAt       DateTime       @updatedAt
 
   plantUnit       PlantUnit      @relation(fields: [plant_unit_id], references: [id])
+  taxInvoices     TaxInvoice[]
 }
 
 model PartyGroups {
@@ -194,6 +199,7 @@ model BankAccounts {
   updatedAt       DateTime       @updatedAt
 
   quotations      Quotation[]
+  taxInvoices     TaxInvoice[]
 }
 
 model PaymentTerms {
@@ -205,6 +211,8 @@ model PaymentTerms {
 
   suppliers       Supplier[]
   quotations      Quotation[]
+  salesOrders     SalesOrder[]
+  taxInvoices     TaxInvoice[]
 }
 
 model CompanyDetails {
@@ -316,6 +324,7 @@ model Supplier {
 
   contactPersons        SupplierContactPerson[]
   bankAccounts          SupplierBankAccount[]
+  purchaseIndentLines   PurchaseIndentLineItem[]
 
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -399,6 +408,8 @@ model Customer {
   addresses         CustomerAddress[]
   contactPersons    CustomerContactPerson[]
   quotations        Quotation[]
+  salesOrders       SalesOrder[]
+  taxInvoices       TaxInvoice[]
 
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -424,6 +435,8 @@ model CustomerAddress {
   stateCode   String
 
   customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  salesOrders SalesOrder[]
+  taxInvoices TaxInvoice[]
 }
 
 model CustomerContactPerson {
@@ -437,6 +450,8 @@ model CustomerContactPerson {
 
   customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   quotations  Quotation[]
+  salesOrders SalesOrder[]
+  taxInvoices TaxInvoice[]
 }
 
 enum AddressType {
@@ -728,6 +743,7 @@ model Quotation {
 
   // Line items
   lineItems             QuotationLineItem[]
+  salesOrders           SalesOrder[]
 
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -766,4 +782,230 @@ model QuotationLineItem {
   updatedAt             DateTime @updatedAt
 
   @@index([quotationId])
+}
+
+model SalesOrder {
+  id                    Int      @id @default(autoincrement())
+
+  customerId            Int
+  contactPersonId       Int?
+  shippingAddressId     Int?
+  shippingAddressText   String?
+  gstNo                 String?
+  plantUnitId           Int?
+  orderDate             DateTime
+  poNo                  String?
+  poDate                DateTime?
+  refQuotationId        Int?
+  paymentTermId         Int?
+  clientPoDocument      String?
+
+  grossAmount           Float    @default(0)
+  cgstAmount            Float    @default(0)
+  sgstAmount            Float    @default(0)
+  igstAmount            Float    @default(0)
+  shippingCharge        Float    @default(0)
+  grandTotal            Float    @default(0)
+
+  termsAndConditions    String?
+
+  customer              Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  contactPerson         CustomerContactPerson? @relation(fields: [contactPersonId], references: [id], onDelete: SetNull)
+  shippingAddress       CustomerAddress? @relation(fields: [shippingAddressId], references: [id], onDelete: SetNull)
+  plantUnit             PlantUnit? @relation(fields: [plantUnitId], references: [id], onDelete: SetNull)
+  paymentTerms          PaymentTerms? @relation(fields: [paymentTermId], references: [id], onDelete: SetNull)
+  quotation             Quotation? @relation(fields: [refQuotationId], references: [id], onDelete: SetNull)
+
+  lineItems             SalesOrderLineItem[]
+  taxInvoices           TaxInvoice[]
+  purchaseIndents       PurchaseIndent[]
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([orderDate])
+}
+
+model SalesOrderLineItem {
+  id                    Int      @id @default(autoincrement())
+
+  salesOrderId          Int
+  itemId                Int
+
+  itemDetails           String?
+  description           String?
+  poLineNo              String?
+  unitId                Int?
+  hsnCode               String?
+  deliveryDate          DateTime?
+
+  qty                   Float    @default(0)
+  rate                  Float    @default(0)
+  discountPercentage    Float    @default(0)
+  discountAmount        Float    @default(0)
+  taxableAmount         Float    @default(0)
+
+  cgstRate              Float    @default(0)
+  cgstAmount            Float    @default(0)
+  sgstRate              Float    @default(0)
+  sgstAmount            Float    @default(0)
+  igstRate              Float    @default(0)
+  igstAmount            Float    @default(0)
+
+  lineTotal             Float    @default(0)
+
+  salesOrder            SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([salesOrderId])
+}
+
+model TaxInvoice {
+  id                    Int      @id @default(autoincrement())
+
+  supplyType            String?
+  plantUnitId           Int?
+  warehouseId           Int?
+
+  customerId            Int
+  contactPersonId       Int?
+  billingAddressText    String?
+  gstNo                 String?
+  shippingAddressId     Int?
+  shippingAddressText   String?
+
+  invoiceNo             String
+  invoiceDate           DateTime
+  customerPoNo          String?
+  customerPoDate        DateTime?
+  refSalesOrderId       Int?
+  salesOrderNo          String?
+  salesOrderDate        DateTime?
+  despatchDocNo         String?
+  paymentTermId         Int?
+  despatchThrough       String?
+  destination           String?
+  bankAccountId         Int?
+  dueDate               DateTime?
+
+  remarks               String?
+  ewayBillDetails       String?
+
+  grossAmount           Float    @default(0)
+  cgstAmount            Float    @default(0)
+  sgstAmount            Float    @default(0)
+  igstAmount            Float    @default(0)
+  shippingCharge        Float    @default(0)
+  tcsAmount             Float    @default(0)
+  roundOff              Float    @default(0)
+  roundOffEnabled       Boolean  @default(false)
+  grandTotal            Float    @default(0)
+
+  termsAndConditions    String?
+
+  customer              Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  contactPerson         CustomerContactPerson? @relation(fields: [contactPersonId], references: [id], onDelete: SetNull)
+  shippingAddress       CustomerAddress? @relation(fields: [shippingAddressId], references: [id], onDelete: SetNull)
+  plantUnit             PlantUnit? @relation(fields: [plantUnitId], references: [id], onDelete: SetNull)
+  warehouse             Warehouses? @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+  paymentTerms          PaymentTerms? @relation(fields: [paymentTermId], references: [id], onDelete: SetNull)
+  bankAccount           BankAccounts? @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+  salesOrder            SalesOrder? @relation(fields: [refSalesOrderId], references: [id], onDelete: SetNull)
+
+  lineItems             TaxInvoiceLineItem[]
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([invoiceDate])
+  @@index([invoiceNo])
+}
+
+model TaxInvoiceLineItem {
+  id                    Int      @id @default(autoincrement())
+
+  taxInvoiceId          Int
+  itemId                Int
+
+  itemDetails           String?
+  description           String?
+  customerItemCode      String?
+  unitId                Int?
+  hsnCode               String?
+
+  qty                   Float    @default(0)
+  rate                  Float    @default(0)
+  discountPercentage    Float    @default(0)
+  discountAmount        Float    @default(0)
+  taxableAmount         Float    @default(0)
+
+  cgstRate              Float    @default(0)
+  cgstAmount            Float    @default(0)
+  sgstRate              Float    @default(0)
+  sgstAmount            Float    @default(0)
+  igstRate              Float    @default(0)
+  igstAmount            Float    @default(0)
+
+  lineTotal             Float    @default(0)
+
+  refSalesOrderNo       String?
+  refJwoinNo            String?
+  refChallanNo          String?
+
+  taxInvoice            TaxInvoice @relation(fields: [taxInvoiceId], references: [id], onDelete: Cascade)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([taxInvoiceId])
+}
+
+model PurchaseIndent {
+  id                    Int      @id @default(autoincrement())
+
+  prApprovalPath        String   @default("Default Path For Indent")
+  departmentId          Int?
+  refSalesOrderId       Int?
+  refProdPlnNo          String?
+  indentDate            DateTime
+  plantUnitId           Int?
+  typeOfPr              String?
+  docAttachmentRequired Boolean  @default(false)
+  remarks               String?
+
+  department            Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  salesOrder            SalesOrder? @relation(fields: [refSalesOrderId], references: [id], onDelete: SetNull)
+  plantUnit             PlantUnit? @relation(fields: [plantUnitId], references: [id], onDelete: SetNull)
+  lineItems             PurchaseIndentLineItem[]
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([indentDate])
+  @@index([departmentId])
+}
+
+model PurchaseIndentLineItem {
+  id                    Int      @id @default(autoincrement())
+
+  purchaseIndentId      Int
+  itemId                Int?
+  description           String?
+  qty                   Float    @default(0)
+  unitId                Int?
+  requiredDate          DateTime?
+  suggestedVendorId     Int?
+  details               String?
+
+  purchaseIndent        PurchaseIndent @relation(fields: [purchaseIndentId], references: [id], onDelete: Cascade)
+  suggestedVendor       Supplier? @relation(fields: [suggestedVendorId], references: [id], onDelete: SetNull)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([purchaseIndentId])
 }
