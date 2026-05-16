@@ -15,6 +15,7 @@ const users = require('./users.controller');
 const supplier = require('./supplier.controller');
 const customer = require('./customer.controller');
 const customerContactPerson = require('./customerContactPerson.controller');
+const supplierContactPerson = require('./supplierContactPerson.controller');
 const hsn = require('./hsn.controller');
 const classification = require('./classification.controller');
 const category = require('./category.controller');
@@ -28,6 +29,7 @@ const salesOrder = require('./sales_order.controller');
 const taxInvoice = require('./tax_invoice.controller');
 const purchaseIndent = require('./purchase_indent.controller');
 const purchaseInquiry = require('./purchase_inquiry.controller');
+const purchaseOrder = require('./purchase_order.controller');
 const itemTransaction = require('./item_transaction.controller');
 
-module.exports = { role, menu, region, zone, subZone, department, stateCountry, plantUnit, warehouses, partyGroups, bankAccounts, paymentTerms, companyDetails, users, supplier, customer, customerContactPerson, hsn, classification, category, group, subGroup, rawMaterial, item, lead, quotation, salesOrder, taxInvoice, purchaseIndent, purchaseInquiry, itemTransaction };
+module.exports = { role, menu, region, zone, subZone, department, stateCountry, plantUnit, warehouses, partyGroups, bankAccounts, paymentTerms, companyDetails, users, supplier, customer, customerContactPerson, supplierContactPerson, hsn, classification, category, group, subGroup, rawMaterial, item, lead, quotation, salesOrder, taxInvoice, purchaseIndent, purchaseInquiry, purchaseOrder, itemTransaction };

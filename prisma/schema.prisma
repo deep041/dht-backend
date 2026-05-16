@@ -157,6 +157,7 @@ model PlantUnit {
   taxInvoices     TaxInvoice[]
   purchaseIndents PurchaseIndent[]
   purchaseInquiries PurchaseInquiry[]
+  purchaseOrders  PurchaseOrder[]
 }
 
 model Warehouses {
@@ -214,6 +215,7 @@ model PaymentTerms {
   quotations      Quotation[]
   salesOrders     SalesOrder[]
   taxInvoices     TaxInvoice[]
+  purchaseOrders  PurchaseOrder[]
 }
 
 model CompanyDetails {
@@ -327,6 +329,7 @@ model Supplier {
   bankAccounts          SupplierBankAccount[]
   purchaseIndentLines   PurchaseIndentLineItem[]
   purchaseInquiries     PurchaseInquiry[]
+  purchaseOrders        PurchaseOrder[]
 
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -342,6 +345,8 @@ model SupplierContactPerson {
   mobileNo      String?
   email         String?
   designation   String?
+
+  purchaseOrders PurchaseOrder[]
 
   createdAt     DateTime @default(now())
 }
@@ -671,6 +676,7 @@ enum ItemTransactionSource {
   TAX_INVOICE
   PURCHASE_INDENT
   PURCHASE_INQUIRY
+  PURCHASE_ORDER
 }
 
 model ItemTransaction {
@@ -862,6 +868,7 @@ model SalesOrder {
   taxInvoices           TaxInvoice[]
   purchaseIndents       PurchaseIndent[]
   purchaseInquiries     PurchaseInquiry[]
+  purchaseOrders        PurchaseOrder[]
 
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -1025,6 +1032,7 @@ model PurchaseIndent {
   plantUnit             PlantUnit? @relation(fields: [plantUnitId], references: [id], onDelete: SetNull)
   lineItems             PurchaseIndentLineItem[]
   purchaseInquiries     PurchaseInquiry[]
+  purchaseOrders        PurchaseOrder[]
 
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -1099,4 +1107,87 @@ model PurchaseInquiryLineItem {
   updatedAt             DateTime @updatedAt
 
   @@index([purchaseInquiryId])
+}
+
+model PurchaseOrder {
+  id                    Int      @id @default(autoincrement())
+
+  poType                String   @default("PO ADMINISTRATION")
+  supplierId            Int?
+  contactPersonId       Int?
+  gstNo                 String?
+  supplierBranch        String?
+  orderDate             DateTime
+  refSuppQuoteNo        String?
+  suppQuoteDate         DateTime?
+  refSalesOrderId       Int?
+  refProductionNo       String?
+  plantUnitId           Int?
+  shipToAddress         String?
+  paymentTermId         Int?
+  currency              String   @default("INR")
+  fcnrValue             Float    @default(1)
+  refPurchaseIndentId   Int?
+  docAttachmentRequired Boolean  @default(false)
+  remarks               String?
+
+  grossAmount           Float    @default(0)
+  cgstAmount            Float    @default(0)
+  sgstAmount            Float    @default(0)
+  igstAmount            Float    @default(0)
+  shippingCharge        Float    @default(0)
+  roundOff              Float    @default(0)
+  roundOffEnabled       Boolean  @default(false)
+  grandTotal            Float    @default(0)
+
+  termsAndConditions    String?
+
+  supplier              Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  contactPerson         SupplierContactPerson? @relation(fields: [contactPersonId], references: [id], onDelete: SetNull)
+  salesOrder            SalesOrder? @relation(fields: [refSalesOrderId], references: [id], onDelete: SetNull)
+  plantUnit             PlantUnit? @relation(fields: [plantUnitId], references: [id], onDelete: SetNull)
+  paymentTerms          PaymentTerms? @relation(fields: [paymentTermId], references: [id], onDelete: SetNull)
+  purchaseIndent        PurchaseIndent? @relation(fields: [refPurchaseIndentId], references: [id], onDelete: SetNull)
+  lineItems             PurchaseOrderLineItem[]
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([orderDate])
+  @@index([supplierId])
+  @@index([refPurchaseIndentId])
+}
+
+model PurchaseOrderLineItem {
+  id                    Int      @id @default(autoincrement())
+
+  purchaseOrderId       Int
+  itemId                Int?
+  description           String?
+  unitId                Int?
+  hsnCode               String?
+  requiredBy            DateTime?
+  committedDate         DateTime?
+
+  qty                   Float    @default(0)
+  rate                  Float    @default(0)
+  discountPercentage    Float    @default(0)
+  discountAmount        Float    @default(0)
+  taxableAmount         Float    @default(0)
+
+  cgstRate              Float    @default(0)
+  cgstAmount            Float    @default(0)
+  sgstRate              Float    @default(0)
+  sgstAmount            Float    @default(0)
+  igstRate              Float    @default(0)
+  igstAmount            Float    @default(0)
+
+  lineTotal             Float    @default(0)
+
+  purchaseOrder         PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([purchaseOrderId])
 }

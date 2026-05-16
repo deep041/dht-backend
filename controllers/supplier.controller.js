@@ -2,9 +2,20 @@ const prisma = require('../utils/prisma');
 const sendResponse = require('../utils/response');
 
 const getSuppliers = async (req, res, next) => {
-    const suppliers = await prisma.supplier.findMany();
-    sendResponse(res, 200, 200, true, 'Suppliers fetched successfully!', suppliers);
-}
+    try {
+        const suppliers = await prisma.supplier.findMany({
+            include: {
+                contactPersons: true,
+                bankAccounts: true,
+                paymentTerms: true
+            },
+            orderBy: { companyName: 'asc' }
+        });
+        sendResponse(res, 200, 200, true, 'Suppliers fetched successfully!', suppliers);
+    } catch (error) {
+        next(error);
+    }
+};
 
 const createSupplier = async (req, res, next) =>
 {
