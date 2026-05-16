@@ -48,10 +48,10 @@ const createLead = async (req, res, next) =>
             data: {
 
                 // 🔹 Lead
-                leadType,
-                leadStatus,
-                leadSource,
-                leadStage,
+                leadType: (leadType ? leadType : 'New'),
+                leadStatus: (leadStatus ? leadStatus : 'Open'),
+                leadSource: (leadSource ? leadSource : 'Other'),
+                leadStage: (leadStage ? leadStage : 'Initial Contact'),
 
                 // 🔹 Person
                 name,
@@ -130,12 +130,10 @@ const getLeads = async (req, res, next) =>
 {
     try
     {
-
         const leads = await prisma.lead.findMany({
             include: {
                 items: true
             },
-
             orderBy: {
                 id: 'desc'
             }
